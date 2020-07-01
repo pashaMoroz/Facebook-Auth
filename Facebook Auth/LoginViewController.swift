@@ -9,16 +9,23 @@
 import UIKit
 import FBSDKLoginKit
 import FacebookCore
+import StoreKit
 
-class LoginViewController: UIViewController {
+class LoginViewController: UIViewController, IAPServiceDelegate {
 
     let loginButton = UIButton()
     let hellowLabel = UILabel()
+    let purchaseButton = UIButton()
+
+    var subscriptionDate: Date?
 
     let loginManager = LoginManager()
 
     override func viewDidLoad() {
         super.viewDidLoad()
+
+        IAPService.shared.getProducts()
+        IAPService.shared.iapServiceDelegate = self
 
         updateButton(isLoggedIn: (AccessToken.current != nil))
         updateMessage(with: Profile.current?.name)
@@ -31,6 +38,19 @@ class LoginViewController: UIViewController {
             // Print out access token
             print("FB Access Token: \(String(describing: AccessToken.current?.tokenString))")
         }
+
+        IAPService.shared.refreshSubscriptionsStatus(callback: {
+
+            print("ТРА ЛЯ ЛЯ")
+           // let timeDate = UserDefaults.standard.object(forKey: IAPProduct.mainYearly.rawValue) as? Date
+            
+            self.subscriptionDate = IAPService.shared.expirationDateFor(IAPProduct.mainYearly.rawValue) ?? Date()
+            self.checkForSubscriptionActivity()
+            
+        }) { (error) in
+            
+            print(error)
+        }
     }
 
 
@@ -38,9 +58,11 @@ class LoginViewController: UIViewController {
 
         hellowLabel.translatesAutoresizingMaskIntoConstraints = false
         loginButton.translatesAutoresizingMaskIntoConstraints = false
+        purchaseButton.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(loginButton)
         view.addSubview(hellowLabel)
+        view.addSubview(purchaseButton)
 
         let margineGuide = view.layoutMarginsGuide
 
@@ -53,8 +75,15 @@ class LoginViewController: UIViewController {
             hellowLabel.bottomAnchor.constraint(equalTo: loginButton.topAnchor, constant: -50),
             hellowLabel.leadingAnchor.constraint(equalTo: margineGuide.leadingAnchor, constant: 16),
             hellowLabel.trailingAnchor.constraint(equalTo: margineGuide.trailingAnchor, constant: -16)
-
         ])
+
+        NSLayoutConstraint.activate([
+            purchaseButton.topAnchor.constraint(equalTo: loginButton.bottomAnchor, constant: 50),
+            purchaseButton.leadingAnchor.constraint(equalTo: margineGuide.leadingAnchor, constant: 16),
+            purchaseButton.trailingAnchor.constraint(equalTo: margineGuide.trailingAnchor, constant: -16)
+        ])
+
+
     }
 
 
@@ -62,9 +91,14 @@ class LoginViewController: UIViewController {
 
         hellowLabel.textColor = .black
         hellowLabel.textAlignment = .center
+        hellowLabel.numberOfLines = 0
 
         loginButton.addTarget(self, action: #selector(loginButtonPressed), for: .touchUpInside)
         loginButton.setTitleColor(.black, for: .normal)
+
+        purchaseButton.setTitleColor(.orange, for: .normal)
+        purchaseButton.setTitle("КУПИТЬ ПОДПИСКУ", for: .normal)
+        purchaseButton.addTarget(self, action: #selector(purchaseButtonPressed), for: .touchUpInside)
 
         self.view.backgroundColor = .systemBackground
 
@@ -88,6 +122,31 @@ class LoginViewController: UIViewController {
 
         }
     }
+
+    @objc func purchaseButtonPressed() {
+        IAPService.shared.purchase(product: .mainYearly)
+    }
+}
+
+// MARK:- IAPServiceDelegate
+extension LoginViewController {
+
+    func successTransactions() {
+        print(#function)
+        checkForSubscriptionActivity()
+    }
+
+    func failedTransactions() {
+         print(#function)
+    }
+
+    func failedRestored() {
+         print(#function)
+    }
+
+    func successRestored() {
+         print(#function)
+    }
 }
 
 // MARK:- Private functions
@@ -96,6 +155,11 @@ extension LoginViewController {
     private func updateButton(isLoggedIn: Bool) {
         let title = isLoggedIn ? "Log out 👋🏻" : "Log in 👍🏻"
         loginButton.setTitle(title, for: .normal)
+        if isLoggedIn {
+            purchaseButton.isHidden = false
+        } else {
+            purchaseButton.isHidden = true
+        }
     }
 
     private func updateMessage(with name: String?) {
@@ -136,6 +200,17 @@ extension LoginViewController {
             Profile.loadCurrentProfile { (profile, error) in
                 self?.updateMessage(with: Profile.current?.name)
             }
+        }
+    }
+
+    private func checkForSubscriptionActivity() {
+
+        guard let subscriptionDate = subscriptionDate else { return }
+        
+        let isActive = subscriptionDate > Date()
+
+        if isActive {
+            hellowLabel.text!  += "с активной подпиской"
         }
     }
 }

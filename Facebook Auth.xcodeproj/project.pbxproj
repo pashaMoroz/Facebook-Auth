@@ -13,6 +13,8 @@
 		D70B569E24A9BE90006F8CAF /* LoginViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = D70B569D24A9BE90006F8CAF /* LoginViewController.swift */; };
 		D70B56A324A9BE92006F8CAF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = D70B56A224A9BE92006F8CAF /* Assets.xcassets */; };
 		D70B56A624A9BE92006F8CAF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = D70B56A424A9BE92006F8CAF /* LaunchScreen.storyboard */; };
+		D70B56B524AC6F50006F8CAF /* IAPService.swift in Sources */ = {isa = PBXBuildFile; fileRef = D70B56B424AC6F50006F8CAF /* IAPService.swift */; };
+		D70B56B724AC8B38006F8CAF /* IAPProduct.swift in Sources */ = {isa = PBXBuildFile; fileRef = D70B56B624AC8B38006F8CAF /* IAPProduct.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -26,6 +28,8 @@
 		D70B56A524A9BE92006F8CAF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		D70B56A724A9BE92006F8CAF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		D70B56AD24A9FA39006F8CAF /* Facebook Auth.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = "Facebook Auth.entitlements"; sourceTree = "<group>"; };
+		D70B56B424AC6F50006F8CAF /* IAPService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IAPService.swift; sourceTree = "<group>"; };
+		D70B56B624AC8B38006F8CAF /* IAPProduct.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IAPProduct.swift; sourceTree = "<group>"; };
 		FF6C93F4ABCA6D0EC663AECB /* Pods_Facebook_Auth.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Facebook_Auth.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -82,12 +86,22 @@
 				D70B56AD24A9FA39006F8CAF /* Facebook Auth.entitlements */,
 				D70B569924A9BE90006F8CAF /* AppDelegate.swift */,
 				D70B569B24A9BE90006F8CAF /* SceneDelegate.swift */,
+				D70B56B824AC8B4B006F8CAF /* Purchases */,
 				D70B569D24A9BE90006F8CAF /* LoginViewController.swift */,
 				D70B56A224A9BE92006F8CAF /* Assets.xcassets */,
 				D70B56A424A9BE92006F8CAF /* LaunchScreen.storyboard */,
 				D70B56A724A9BE92006F8CAF /* Info.plist */,
 			);
 			path = "Facebook Auth";
+			sourceTree = "<group>";
+		};
+		D70B56B824AC8B4B006F8CAF /* Purchases */ = {
+			isa = PBXGroup;
+			children = (
+				D70B56B624AC8B38006F8CAF /* IAPProduct.swift */,
+				D70B56B424AC6F50006F8CAF /* IAPService.swift */,
+			);
+			path = Purchases;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -206,6 +220,8 @@
 			files = (
 				D70B569E24A9BE90006F8CAF /* LoginViewController.swift in Sources */,
 				D70B569A24A9BE90006F8CAF /* AppDelegate.swift in Sources */,
+				D70B56B724AC8B38006F8CAF /* IAPProduct.swift in Sources */,
+				D70B56B524AC6F50006F8CAF /* IAPService.swift in Sources */,
 				D70B569C24A9BE90006F8CAF /* SceneDelegate.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
