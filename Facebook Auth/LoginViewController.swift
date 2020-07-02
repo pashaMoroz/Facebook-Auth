@@ -31,6 +31,7 @@ class LoginViewController: UIViewController {
         updateButton(isLoggedIn: (AccessToken.current != nil))
         updateMessage(with: Profile.current?.name)
 
+
         setupConstraints()
         setupElements()
 
@@ -174,13 +175,8 @@ extension LoginViewController {
     private func updateButton(isLoggedIn: Bool) {
         let title = isLoggedIn ? "Log out 👋🏻" : "Log in 👍🏻"
         loginButton.setTitle(title, for: .normal)
-        if isLoggedIn {
-            purchaseButton.isHidden = false
-            restoredButton.isHidden = false
-        } else {
-            purchaseButton.isHidden = true
-            restoredButton.isHidden = true
-        }
+
+        hiddenButtons(status: isLoggedIn)
     }
 
     private func updateMessage(with name: String?) {
@@ -228,16 +224,13 @@ extension LoginViewController {
         
         guard let subscriptionDate = subscriptionDate else { return }
 
-        purchaseButton.isHidden = false
-        restoredButton.isHidden = false
 
         let isActive = subscriptionDate > Date()
 
+         hiddenButtons(status: isActive)
+
         if isActive {
             hellowLabel.text!  += "с активной подпиской"
-
-            purchaseButton.isHidden = true
-            restoredButton.isHidden = true
         }
     }
 
@@ -246,7 +239,7 @@ extension LoginViewController {
         IAPService.shared.refreshSubscriptionsStatus(callback: {
 
             print(#function)
-            
+
             self.subscriptionDate = UserDefaults.standard.object(forKey: IAPProduct.mainYearly.rawValue) as? Date
 
             self.checkForSubscriptionActivity()
@@ -254,6 +247,17 @@ extension LoginViewController {
         }) { (error) in
 
             print(error)
+        }
+    }
+
+    private func hiddenButtons( status: Bool ) {
+
+        if status {
+            purchaseButton.isHidden = false
+            restoredButton.isHidden = false
+        } else {
+            purchaseButton.isHidden = true
+            restoredButton.isHidden = true
         }
     }
 }
