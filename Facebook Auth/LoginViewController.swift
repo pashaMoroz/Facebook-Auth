@@ -40,17 +40,7 @@ class LoginViewController: UIViewController {
             print("FB Access Token: \(String(describing: AccessToken.current?.tokenString))")
         }
 
-        IAPService.shared.refreshSubscriptionsStatus(callback: {
-
-            print("ТРА ЛЯ ЛЯ")
-            self.subscriptionDate = UserDefaults.standard.object(forKey: IAPProduct.mainYearly.rawValue) as? Date
-
-            self.checkForSubscriptionActivity()
-            
-        }) { (error) in
-            
-            print(error)
-        }
+        refreshSubscriptionsStatus()
     }
 
     deinit {
@@ -154,8 +144,9 @@ extension LoginViewController: IAPServiceDelegate {
 
     func successTransactions() {
         print(#function)
-        
-        checkForSubscriptionActivity()
+
+        refreshSubscriptionsStatus()
+        //checkForSubscriptionActivity()
     }
 
     func failedTransactions() {
@@ -164,11 +155,16 @@ extension LoginViewController: IAPServiceDelegate {
 
     func failedRestored() {
          print(#function)
+        refreshSubscriptionsStatus()
+        print("Нечего восстанавливать")
     }
 
     func successRestored() {
          print(#function)
-        checkForSubscriptionActivity()
+
+        print("Восстановлена последняя подписка")
+        refreshSubscriptionsStatus()
+        //checkForSubscriptionActivity()
     }
 }
 
@@ -229,15 +225,35 @@ extension LoginViewController {
     }
 
     private func checkForSubscriptionActivity() {
-
-        self.subscriptionDate = UserDefaults.standard.object(forKey: IAPProduct.mainYearly.rawValue) as? Date
         
         guard let subscriptionDate = subscriptionDate else { return }
-        
+
+        purchaseButton.isHidden = false
+        restoredButton.isHidden = false
+
         let isActive = subscriptionDate > Date()
 
         if isActive {
             hellowLabel.text!  += "с активной подпиской"
+
+            purchaseButton.isHidden = true
+            restoredButton.isHidden = true
+        }
+    }
+
+    private func refreshSubscriptionsStatus() {
+
+        IAPService.shared.refreshSubscriptionsStatus(callback: {
+
+            print(#function)
+            
+            self.subscriptionDate = UserDefaults.standard.object(forKey: IAPProduct.mainYearly.rawValue) as? Date
+
+            self.checkForSubscriptionActivity()
+
+        }) { (error) in
+
+            print(error)
         }
     }
 }
