@@ -11,11 +11,12 @@ import FBSDKLoginKit
 import FacebookCore
 import StoreKit
 
-class LoginViewController: UIViewController, IAPServiceDelegate {
+class LoginViewController: UIViewController {
 
     let loginButton = UIButton()
     let hellowLabel = UILabel()
     let purchaseButton = UIButton()
+    let restoredButton = UIButton()
 
     var subscriptionDate: Date?
 
@@ -42,9 +43,8 @@ class LoginViewController: UIViewController, IAPServiceDelegate {
         IAPService.shared.refreshSubscriptionsStatus(callback: {
 
             print("ТРА ЛЯ ЛЯ")
-           // let timeDate = UserDefaults.standard.object(forKey: IAPProduct.mainYearly.rawValue) as? Date
-            
-            self.subscriptionDate = IAPService.shared.expirationDateFor(IAPProduct.mainYearly.rawValue) ?? Date()
+            self.subscriptionDate = UserDefaults.standard.object(forKey: IAPProduct.mainYearly.rawValue) as? Date
+
             self.checkForSubscriptionActivity()
             
         }) { (error) in
@@ -53,16 +53,22 @@ class LoginViewController: UIViewController, IAPServiceDelegate {
         }
     }
 
+    deinit {
+       NotificationCenter.default.removeObserver(self)
+    }
+
 
     private func setupConstraints() {
 
         hellowLabel.translatesAutoresizingMaskIntoConstraints = false
         loginButton.translatesAutoresizingMaskIntoConstraints = false
         purchaseButton.translatesAutoresizingMaskIntoConstraints = false
+        restoredButton.translatesAutoresizingMaskIntoConstraints = false
 
         view.addSubview(loginButton)
         view.addSubview(hellowLabel)
         view.addSubview(purchaseButton)
+        view.addSubview(restoredButton)
 
         let margineGuide = view.layoutMarginsGuide
 
@@ -83,6 +89,12 @@ class LoginViewController: UIViewController, IAPServiceDelegate {
             purchaseButton.trailingAnchor.constraint(equalTo: margineGuide.trailingAnchor, constant: -16)
         ])
 
+        NSLayoutConstraint.activate([
+            restoredButton.topAnchor.constraint(equalTo: purchaseButton.bottomAnchor, constant: 10),
+            restoredButton.leadingAnchor.constraint(equalTo: margineGuide.leadingAnchor, constant: 16),
+            restoredButton.trailingAnchor.constraint(equalTo: margineGuide.trailingAnchor, constant: -16)
+        ])
+
 
     }
 
@@ -100,8 +112,11 @@ class LoginViewController: UIViewController, IAPServiceDelegate {
         purchaseButton.setTitle("КУПИТЬ ПОДПИСКУ", for: .normal)
         purchaseButton.addTarget(self, action: #selector(purchaseButtonPressed), for: .touchUpInside)
 
-        self.view.backgroundColor = .systemBackground
+        restoredButton.setTitleColor(.orange, for: .normal)
+        restoredButton.setTitle("ВОССТАНОВИТЬ ПОДПИСКУ", for: .normal)
+        restoredButton.addTarget(self, action: #selector(restoredButtonPressed), for: .touchUpInside)
 
+        self.view.backgroundColor = .systemBackground
     }
 
     @objc func loginButtonPressed() {
@@ -124,15 +139,22 @@ class LoginViewController: UIViewController, IAPServiceDelegate {
     }
 
     @objc func purchaseButtonPressed() {
+
         IAPService.shared.purchase(product: .mainYearly)
+    }
+
+    @objc func restoredButtonPressed() {
+
+        IAPService.shared.restorePurchases()
     }
 }
 
 // MARK:- IAPServiceDelegate
-extension LoginViewController {
+extension LoginViewController: IAPServiceDelegate {
 
     func successTransactions() {
         print(#function)
+        
         checkForSubscriptionActivity()
     }
 
@@ -146,6 +168,7 @@ extension LoginViewController {
 
     func successRestored() {
          print(#function)
+        checkForSubscriptionActivity()
     }
 }
 
@@ -157,8 +180,10 @@ extension LoginViewController {
         loginButton.setTitle(title, for: .normal)
         if isLoggedIn {
             purchaseButton.isHidden = false
+            restoredButton.isHidden = false
         } else {
             purchaseButton.isHidden = true
+            restoredButton.isHidden = true
         }
     }
 
@@ -205,6 +230,8 @@ extension LoginViewController {
 
     private func checkForSubscriptionActivity() {
 
+        self.subscriptionDate = UserDefaults.standard.object(forKey: IAPProduct.mainYearly.rawValue) as? Date
+        
         guard let subscriptionDate = subscriptionDate else { return }
         
         let isActive = subscriptionDate > Date()

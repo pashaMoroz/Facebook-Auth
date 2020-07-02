@@ -114,9 +114,10 @@ extension IAPService: SKPaymentTransactionObserver {
 
             case .restored:
                 iapServiceDelegate?.successRestored()
+                refreshSubscriptionsStatus(callback: self.successBlock ?? {}, failure: self.failureBlock ?? {_ in})
                 queue.finishTransaction(transaction)
 
-
+                
             default: queue.finishTransaction(transaction)
 
             }
@@ -157,7 +158,7 @@ extension SKPaymentTransactionState {
 }
 
 extension IAPService {
-    func refreshSubscriptionsStatus(callback : @escaping SuccessBlock, failure : @escaping FailureBlock){
+    func refreshSubscriptionsStatus(callback : @escaping SuccessBlock, failure : @escaping FailureBlock) {
         // save blocks for further use
         self.refreshSubscriptionSuccessBlock = callback
         self.refreshSubscriptionFailureBlock = failure
@@ -180,8 +181,10 @@ extension IAPService {
         request.httpBody = httpBody
         URLSession.shared.dataTask(with: request)  { (data, response, error) in
             DispatchQueue.main.async {
+
                 if data != nil {
                     if let json = try? JSONSerialization.jsonObject(with: data!, options: .allowFragments){
+
                         self.parseReceipt(json as! Dictionary<String, Any>)
                         return
                     }
