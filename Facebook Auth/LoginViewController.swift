@@ -86,7 +86,6 @@ class LoginViewController: UIViewController {
             restoredButton.trailingAnchor.constraint(equalTo: margineGuide.trailingAnchor, constant: -16)
         ])
 
-
     }
 
 
@@ -176,6 +175,7 @@ extension LoginViewController {
         let title = isLoggedIn ? "Log out 👋🏻" : "Log in 👍🏻"
         loginButton.setTitle(title, for: .normal)
 
+
         hiddenButtons(status: isLoggedIn)
     }
 
@@ -253,11 +253,11 @@ extension LoginViewController {
     private func hiddenButtons( status: Bool ) {
 
         if status {
-            purchaseButton.isHidden = false
-            restoredButton.isHidden = false
-        } else {
             purchaseButton.isHidden = true
             restoredButton.isHidden = true
+        } else {
+            purchaseButton.isHidden = false
+            restoredButton.isHidden = false
         }
     }
 }
