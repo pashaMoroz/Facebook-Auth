@@ -35,10 +35,11 @@ class LoginViewController: UIViewController {
         setupConstraints()
         setupElements()
 
+
         NotificationCenter.default.addObserver(forName: .AccessTokenDidChange, object: nil, queue: OperationQueue.main) { (notification) in
 
             // Print out access token
-            print("FB Access Token: \(String(describing: AccessToken.current?.tokenString))")
+           // print("FB Access Token: \(String(describing: AccessToken.current?.tokenString))")
         }
 
         refreshSubscriptionsStatus()
@@ -49,6 +50,7 @@ class LoginViewController: UIViewController {
     }
 
 
+    // MARK:- SETUP UI
     private func setupConstraints() {
 
         hellowLabel.translatesAutoresizingMaskIntoConstraints = false
@@ -87,7 +89,6 @@ class LoginViewController: UIViewController {
         ])
 
     }
-
 
     private func setupElements() {
 
@@ -128,6 +129,8 @@ class LoginViewController: UIViewController {
         }
     }
 
+    // MARK:- Objc методы
+
     @objc func purchaseButtonPressed() {
 
         IAPService.shared.purchase(product: .mainYearly)
@@ -136,6 +139,15 @@ class LoginViewController: UIViewController {
     @objc func restoredButtonPressed() {
 
         IAPService.shared.restorePurchases()
+    }
+
+    private func showAlert(text: String, title: String) {
+        let alert = UIAlertController(title: title, message: text, preferredStyle: .alert)
+        let okAction = UIAlertAction(title: "Ok", style: .default, handler: nil)
+        let cancelAction = UIAlertAction(title: "Cancel", style: .destructive, handler: nil)
+        alert.addAction(cancelAction)
+        alert.addAction(okAction)
+        self.present(alert, animated: true, completion: nil)
     }
 }
 
@@ -146,29 +158,32 @@ extension LoginViewController: IAPServiceDelegate {
         print(#function)
 
         refreshSubscriptionsStatus()
-        //checkForSubscriptionActivity()
+        //showAlert(text: "Спасибо за покупку!", title: "Подписка активна на 3 минуты!")
     }
 
     func failedTransactions() {
          print(#function)
+        
+        //refreshSubscriptionsStatus()
+        showAlert(text: "Ошибка транзакции", title: "Ошибка")
     }
 
     func failedRestored() {
          print(#function)
         refreshSubscriptionsStatus()
-        print("Нечего восстанавливать")
+        //showAlert(text: "Нечего восстанавливать", title: "Нет активной подписки")
     }
 
     func successRestored() {
          print(#function)
 
-        print("Восстановлена последняя подписка")
         refreshSubscriptionsStatus()
-        //checkForSubscriptionActivity()
+        //showAlert(text: "Покупка успешно восстановлена", title: "Подписка активирована!")
     }
 }
 
-// MARK:- Private functions
+
+// MARK:- Private functions UI
 extension LoginViewController {
 
     private func updateButton(isLoggedIn: Bool) {
@@ -191,6 +206,8 @@ extension LoginViewController {
         hellowLabel.text = "Hello, \(name)!"
     }
 }
+
+// MARK:- Private functions FB
 
 extension LoginViewController {
 
@@ -220,17 +237,23 @@ extension LoginViewController {
         }
     }
 
+    // MARK:- Private functions Purcheses
+
     private func checkForSubscriptionActivity() {
-        
-        guard let subscriptionDate = subscriptionDate else { return }
 
+        if subscriptionDate == nil {
+            showAlert(text: "Ошибка!", title: "Подписка НЕ активна!")
+        } else {
 
-        let isActive = subscriptionDate > Date()
+            let isActive = subscriptionDate! > Date()
 
-         hiddenButtons(status: isActive)
+            hiddenButtons(status: isActive)
 
-        if isActive {
-            hellowLabel.text!  += "с активной подпиской"
+            if isActive {
+  //              showAlert(text: "Успех!", title: "Подписка активна!")
+            } else {
+                showAlert(text: "Ошибка!", title: "Подписка НЕ активна!")
+            }
         }
     }
 
@@ -238,7 +261,7 @@ extension LoginViewController {
 
         IAPService.shared.refreshSubscriptionsStatus(callback: {
 
-            print(#function)
+            //print(#function)
 
             self.subscriptionDate = UserDefaults.standard.object(forKey: IAPProduct.mainYearly.rawValue) as? Date
 

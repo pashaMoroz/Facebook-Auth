@@ -80,6 +80,7 @@ class IAPService: NSObject {
         print("restoring purchases")
         if SKPaymentQueue.canMakePayments() {
             paymentQueue.restoreCompletedTransactions()
+            //iapServiceDelegate?.successRestored()
         }
     }
 }
@@ -91,7 +92,6 @@ extension IAPService: SKProductsRequestDelegate {
         self.products = response.products
         for product in response.products {
             print(product.localizedTitle)
-            //for nonConsumable
             productPrice = product.localizedPrice
         }
     }
@@ -106,23 +106,25 @@ extension IAPService: SKPaymentTransactionObserver {
 
             switch transaction.transactionState {
             case .purchasing: break
-            case .purchased:
-                UserDefaults.standard.set(true, forKey: IAPProduct.mainYearly.rawValue)
 
+            case .purchased:
+
+                UserDefaults.standard.set(true, forKey: IAPProduct.mainYearly.rawValue)
                 iapServiceDelegate?.successTransactions()
                 queue.finishTransaction(transaction)
 
             case .restored:
-                iapServiceDelegate?.successRestored()
-                refreshSubscriptionsStatus(callback: self.successBlock ?? {}, failure: self.failureBlock ?? {_ in})
+
+                //refreshSubscriptionsStatus(callback: self.successBlock ?? {}, failure: self.failureBlock ?? {_ in})
+                //iapServiceDelegate?.successRestored()
                 queue.finishTransaction(transaction)
 
-                
-            default: queue.finishTransaction(transaction)
 
+            default: queue.finishTransaction(transaction)
             }
 
             if transaction.transactionState == .failed {
+
                 guard let error = transaction.error else { return }
                 iapServiceDelegate?.failedTransactions()
                 queue.finishTransaction(transaction)
@@ -133,8 +135,19 @@ extension IAPService: SKPaymentTransactionObserver {
 
     func paymentQueueRestoreCompletedTransactionsFinished(_ queue: SKPaymentQueue) {
 
-        iapServiceDelegate?.failedRestored()
+        for scanTansaction in queue.transactions {
+            switch scanTansaction.transactionState {
+
+            case.purchasing: break
+            case.purchased : iapServiceDelegate?.successTransactions()
+            case.restored : iapServiceDelegate?.successRestored()
+
+
+            default: break
+            }
+        }
     }
+
 
     func paymentQueue(_ queue: SKPaymentQueue, restoreCompletedTransactionsFailedWithError error: Error) {
         iapServiceDelegate?.failedTransactions()
@@ -234,8 +247,7 @@ extension IAPService {
             if let date = formatter.date(from: receipt["expires_date"] as! String) {
 
                 if date > Date() {
-                    // do not save expired date to user defaults to avoid overwriting with expired date
-                    
+                    // do not save expired date tor user defaults to avoid overwriting with expired dater
                     UserDefaults.standard.set(date, forKey: productID)
                 }
             }
